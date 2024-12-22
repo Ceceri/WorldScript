@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+  <meta charset="UTF-8">
+  <title>编辑游戏</title>
+  <!-- 这里可放一些CSS链接或样式 -->
+  <style>
+    body { font-family: sans-serif; margin: 20px; }
+    h1, h2, h3 { margin-top: 1.2em; }
+    .label-block { display: block; margin-top: 0.5em; }
+    .condition-item { border: 1px dashed #aaa; padding: 8px; margin-bottom: 8px; }
+    .condition-item span { font-weight: bold; margin-right: 6px; }
+  </style>
+</head>
+<body>
+  <h1>编辑游戏</h1>
+
+  <!-- 游戏信息管理 -->
+  <div id="game-info-section">
+    <h2>基本信息</h2>
+    <div>
+      <label class="label-block">游戏标题: 
+        <input type="text" id="game-title" />
+      </label>
+      
+      <label class="label-block">游戏背景:</label>
+      <textarea id="game-background" rows="5" cols="50"></textarea><br />
+
+      <button id="update-game-btn">更新游戏信息</button>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 属性管理 -->
+  <div id="attribute-section">
+    <h2>属性管理</h2>
+    <div id="attribute-list"></div>
+    <h3>添加新属性</h3>
+    <label>名称: <input type="text" id="new-attr-name" /></label>
+    <label>初始值: <input type="number" id="new-attr-value" step="any" /></label>
+    <button id="add-attr-btn">添加属性</button>
+  </div>
+
+  <hr>
+
+  <!-- 事件管理 -->
+  <div id="event-section">
+    <h2>事件管理</h2>
+    <div id="event-list"></div>
+    <h3>添加新事件</h3>
+    <label>事件ID(唯一标识): <input type="text" id="new-event-id" /></label><br />
+    <label>标题: <input type="text" id="new-event-title" /></label><br />
+    <label>描述:</label><br />
+    <textarea id="new-event-desc" rows="3" cols="50"></textarea><br />
+
+    <div>
+      <button id="llm-generate-btn">使用 LLM 生成扩写和选项</button>
+    </div>
+
+    <div>
+      <label>属性：</label>
+      <select id="range-attribute"></select>
+    </div>
+    <div>
+      <label>下限：</label>
+      <input type="number" id="range-min" placeholder="输入下限值" />
+      <label>上限：</label>
+      <input type="number" id="range-max" placeholder="输入上限值" />
+    </div>
+
+    <div id="option-section" style="display:none;">
+      <h3>选项管理 (当前编辑事件ID: <span id="current-event-id"></span>)</h3>
+      <div id="option-list"></div>
+      <button id="add-blank-option-btn">添加空白选项</button>
+    </div>
+
+    <button id="save-event-btn">保存事件及选项</button>
+  </div>
+
+  <hr>
+
+  <!-- 结局管理 -->
+  <div id="ending-section">
+    <h2>结局管理</h2>
+
+    <!-- 用于展示已存在的结局 -->
+    <div id="ending-list"></div>
+
+    <h3>添加新结局</h3>
+    <label class="label-block">描述:</label>
+    <textarea id="new-ending-desc" rows="3" cols="50"></textarea><br />
+
+    <!-- 
+      这个选择框将用于“attribute”类型的条件时，可以让用户先选一些属性 
+      也可隐藏或只在“attribute”时动态显示 
+    -->
+    <label>可比较的属性(可选)：</label>
+    <select id="ending-attribute-select"></select>
+
+    <br /><br />
+    <label>选择条件类型：</label>
+    <select id="ending-condition-type">
+      <option value="attribute">属性比较</option>
+      <option value="item">是否拥有物品</option>
+      <option value="flag">是否满足Flag</option>
+    </select>
+
+    <button id="add-ending-condition-btn">添加条件</button>
+
+    <!-- 条件列表容器：动态往这里添加多个条件输入项 -->
+    <div id="ending-condition-list" style="margin-top:10px;"></div>
+
+    <br />
+    <button id="add-ending-btn">添加结局</button>
+  </div>
+
+  <!-- JS 文件，务必在页面底部，确保上面元素均已加载 -->
+  <script src="js/edit_game.js"></script>
+</body>
+</html>

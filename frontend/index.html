@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+<meta charset="UTF-8" />
+<title>游戏系统</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <h1>游戏列表</h1>
+  <div id="game-list"></div>
+  <button id="create-game-btn">创建游戏</button>
+  <div id="create-game-form" style="display:none;">
+    <input type="text" id="game-title" placeholder="游戏标题">
+    <textarea id="game-background" placeholder="游戏背景"></textarea>
+    <button id="save-game-btn">保存</button>
+  </div>
+
+  <div id="edit-game-section" style="display:none;">
+    <!-- 此处通过edit_game.js进行动态渲染 -->
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
