@@ -62,12 +62,33 @@ async function checkEndings(gameId) {
 
     for (const ending of endings) {
         if (checkConditions(currentAttributes, ending.trigger_conditions)) {
-            alert(ending.description || "游戏结束！");
+            // 使用 SweetAlert2 显示结局信息
+            await Swal.fire({
+                icon: 'success',
+                title: '游戏结束',
+                text: ending.description || "游戏结束！",
+                showDenyButton: true, // 显示第二个按钮
+                showCancelButton: true, // 显示取消按钮
+                confirmButtonText: '再来一次',
+                denyButtonText: '返回首页',
+                cancelButtonText: '取消',
+                allowOutsideClick: false
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // 再来一次：重新加载当前页面
+                    window.location.reload();
+                } else if (result.isDenied) {
+                    // 返回首页：跳转到首页
+                    window.location.href = '/index.html';
+                }
+            });
+
             return true;
         }
     }
     return false;
 }
+
 
 // 检查多个条件是否满足
 function checkConditions(attributes, conditions) {
@@ -133,14 +154,31 @@ async function selectOption(event, option) {
     // 确保 result_attribute_changes 是一个数组
     if (!Array.isArray(changes)) {
         console.error("Invalid result_attribute_changes:", changes);
-        alert("选项的属性变化数据无效！");
+        Swal.fire({
+            icon: 'error',
+            title: '无效的选项',
+            text: '选项的属性变化数据无效！'
+        });
         return;
     }
 
-    // 如果没有属性变化，直接返回
+    // 如果没有属性变化，仅弹出影响描述并继续游戏
     if (changes.length === 0) {
         console.warn("No attribute changes to apply.");
-        alert("没有属性变化可应用！");
+        await Swal.fire({
+            // icon: 'info',
+            title: '选择结果',
+            text: option.impact_description || "你选择了该选项。",
+            confirmButtonText: '继续'
+        });
+
+        // 检查是否触发结局
+        if (await checkEndings(event.game_id)) {
+            return;
+        }
+
+        // 继续游戏
+        startGame(event.game_id);
         return;
     }
 
@@ -168,7 +206,12 @@ async function selectOption(event, option) {
 
     updateAttributesDisplay();
 
-    alert(option.impact_description || "你选择了该选项。");
+    await Swal.fire({
+        // icon: 'info',
+        title: '选择结果',
+        text: option.impact_description || "你选择了该选项。",
+        confirmButtonText: '继续'
+    });
 
     // 检查是否触发结局
     if (await checkEndings(event.game_id)) {
@@ -178,6 +221,8 @@ async function selectOption(event, option) {
     // 继续游戏
     startGame(event.game_id);
 }
+
+
 
 // 属性变化逻辑
 function applyOperation(currentValue, change) {

@@ -1,67 +1,91 @@
-// 简单示例，从后端获取游戏列表并展示
+// js/main.js
+
+// 设置全局的 baseURL（后端 API 地址）和 frontBaseURL（前端地址）
+const baseURL = 'http://127.0.0.1:8000';  // 后端 API 基础地址
+const frontBaseURL = 'http://127.0.0.1:8001';  // 前端页面基础地址
+
+// 从后端获取游戏列表并展示
 async function loadGames() {
-    const resp = await fetch('http://127.0.0.1:8000/games/');  // 向后端请求游戏列表
-    const games = await resp.json();  // 将响应数据转换为 JSON
-    const gameListDiv = document.getElementById('game-list');  // 获取游戏列表显示的 DOM
-    gameListDiv.innerHTML = '';  // 清空内容
+    try {
+        const resp = await fetch(`${baseURL}/games/`);
+        if (!resp.ok) {
+            throw new Error('无法获取游戏列表');
+        }
 
-    games.forEach(g => {
-        const div = document.createElement('div');  // 为每个游戏创建一个 <div> 元素
-        div.innerHTML = `
-            <strong>${g.title}</strong> 
-            <button data-id="${g.id}" class="edit-game-btn">编辑</button> 
-            <button data-id="${g.id}" class="play-game-btn">游玩</button>
-        `;
-        gameListDiv.appendChild(div);
-    });
+        const games = await resp.json();
+        const gameListDiv = document.getElementById('game-list');
+        gameListDiv.innerHTML = ''; // 清空内容
 
-    // 修改 "编辑" 按钮逻辑，点击后跳转到 edit_game.html 页面，带上 game_id 参数
-    document.querySelectorAll('.edit-game-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const gameId = e.target.getAttribute('data-id');  // 获取游戏ID
-            window.location.href = `http://127.0.0.1:8001/edit_game.html?game_id=${gameId}`;
+        games.forEach(g => {
+            const gameCard = document.createElement('div');
+            gameCard.classList.add('game-card');
+            gameCard.innerHTML = `
+                <strong>${g.title}</strong>
+                <button class="btn btn-primary edit-game-btn" data-id="${g.id}">编辑</button>
+                <button class="btn btn-success play-game-btn" data-id="${g.id}">游玩</button>
+            `;
+            gameListDiv.appendChild(gameCard);
         });
-    });
-    document.querySelectorAll('.play-game-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            const gameId = e.target.getAttribute('data-id');
-            // 跳转到 play_game.html
-            // 假设你的前端域名为 https://my-frontend.com
-            // 那就写:
-            // window.location.href = `https://my-frontend.com/play_game.html?game_id=${gameId}`;
-            // 本地测试时:
-            window.location.href = `http://127.0.0.1:8001/play_game.html?game_id=${gameId}`;
+
+        // 添加事件监听器
+        document.querySelectorAll('.edit-game-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const gameId = e.target.getAttribute('data-id');
+                window.location.href = `${frontBaseURL}/edit_game.html?game_id=${gameId}`;
+            });
         });
-    });
-    
-    // 游玩按钮功能留待 play_game.js 实现
+        document.querySelectorAll('.play-game-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const gameId = e.target.getAttribute('data-id');
+                window.location.href = `${frontBaseURL}/play_game.html?game_id=${gameId}`;
+            });
+        });
+    } catch (error) {
+        console.error(error.message);
+    }
 }
 
+
+// 显示创建游戏表单
 document.getElementById('create-game-btn').addEventListener('click', () => {
     document.getElementById('create-game-form').style.display = 'block';
 });
 
+// 保存新游戏并刷新游戏列表
 document.getElementById('save-game-btn').addEventListener('click', async () => {
-    const title = document.getElementById('game-title').value;  // 获取标题
-    const background = document.getElementById('game-background').value;  // 获取背景
+    const title = document.getElementById('game-title').value.trim();  // 获取标题
+    const background = document.getElementById('game-background').value.trim();  // 获取背景
 
-    const resp = await fetch('http://127.0.0.1:8000/games/', {  // 发送POST请求创建游戏
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            title,
-            background,
-            random_entries: []  // 添加默认空数组
-        })
-    });    
-    if(resp.ok) {
-        alert('创建成功');
-        document.getElementById('create-game-form').style.display = 'none';
-        await loadGames();  // 重新加载游戏列表
-    } else {
-        alert('创建失败');
+    if (!title || !background) {
+        alert('请填写所有字段');
+        return;
+    }
+
+    try {
+        const resp = await fetch(`${baseURL}/games/`, {  // 使用 baseURL 发送POST请求
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                title,
+                background,
+                random_entries: []  // 添加默认空数组
+            })
+        });
+
+        if(resp.ok) {
+            alert('创建成功');
+            document.getElementById('create-game-form').style.display = 'none';
+            document.getElementById('game-title').value = '';
+            document.getElementById('game-background').value = '';
+            await loadGames();  // 重新加载游戏列表
+        } else {
+            const errorData = await resp.json();
+            alert(`创建失败: ${errorData.message || '未知错误'}`);
+        }
+    } catch (error) {
+        alert(`创建失败: ${error.message}`);
     }
 });
 
 // 初始化页面时加载游戏列表
-loadGames();
+window.addEventListener('DOMContentLoaded', loadGames);

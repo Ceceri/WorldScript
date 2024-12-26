@@ -171,7 +171,7 @@ def llm_generate(data: EventLLMGenerateRequest):
     """
     try:
         # 调用 LLM 生成扩展描述和选项
-        extended_description, raw_options = call_llm(data.title, data.description, data.background)
+        extended_description, raw_options = call_llm(data.title, data.description, data.background, data.attributes)
         
         # 将 raw_options 转换为符合 EventOption 格式的列表
         options = [

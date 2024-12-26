@@ -1,0 +1,363 @@
+/* 定义CSS变量 */ 
+:root {
+    --sidebar-width: 200px; /* 调整侧边栏宽度 */
+    --header-height: 150px; /* 标题区域高度 */
+    --main-bg-color: #f5e3d4; /* 浅棕色背景 */
+    --sidebar-gradient-color: rgba(0, 0, 0, 0.1); /* 侧边栏渐变颜色 */
+    --card-bg-color: #fff; /* 卡片背景颜色 */
+    --sidebar-image-scale: 0.8; /* 控制侧边栏图片缩放比例 */
+    
+    /* 按钮颜色变量 */
+    --btn-blue: #0078d7;
+    --btn-blue-hover: #005fa1;
+    --btn-green: #28a745;
+    --btn-green-hover: #218838;
+    --btn-yellow: #ffc107;
+    --btn-yellow-hover: #e0a800;
+    --btn-red: #ff4500;
+    --btn-red-hover: #d03900;
+}
+
+/* 全局样式 */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    /* height: 100%; */ /* 移除固定高度 */
+    /* overflow: hidden; */ /* 移除禁止滚动 */
+    background-color: var(--main-bg-color); /* 浅棕色背景 */
+
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.edit-container {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 1200px;
+    margin: 20px auto; /* 居中对齐，并增加顶部和底部间距 */
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 两列布局 */
+    grid-gap: 20px; /* 网格间距 */
+}
+
+/* 侧边栏通用样式 */
+.sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: var(--sidebar-width);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    overflow: hidden; /* 确保背景图像不会溢出 */
+}
+
+/* 添加滚动动画的关键帧 */
+@keyframes scrollBackgroundX {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: -1024px 0; /* 根据你实际背景的总宽度来调整 */
+    }
+}
+
+/* 左侧侧边栏 */
+.left-sidebar {
+    left: 0;
+    background-image: url('../images/left.jpg');
+    background-repeat: repeat-x; /* 纵向重复 */
+    background-size: cover; /* 确保背景图像覆盖整个侧边栏 */
+    animation: scrollBackgroundX 20s linear infinite; 
+    box-shadow: inset -10px 0 20px var(--sidebar-gradient-color); /* 左侧渐变 */
+}
+
+/* 右侧侧边栏 */
+.right-sidebar {
+    right: 0;
+    background-image: url('../images/right.jpg');
+    background-repeat: repeat-x;
+    background-size: cover;
+    animation: scrollBackgroundX 20s linear infinite; /* 反向滚动 */
+    box-shadow: inset 10px 0 20px var(--sidebar-gradient-color); /* 右侧渐变 */
+}
+
+/* 主内容部分 */
+.main-content {
+    margin-left: var(--sidebar-width);
+    margin-right: var(--sidebar-width);
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+/* 标题区域 */
+.header-title {
+    height: var(--header-height);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--main-bg-color);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1); /* 分割线 */
+    text-align: center;
+}
+
+.header-title h1 {
+    font-size: 2.5rem;
+    color: #6b4f3f;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); /* 轻微阴影 */
+}
+
+/* 游戏列表 */
+.game-list {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 20px;
+    background-color: var(--main-bg-color);
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 100%;
+}
+
+/* 游戏卡片 */
+.game-card {
+    background-color: var(--card-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    width: 200px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.game-card strong {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+/* 通用按钮样式 */
+button {
+    border: none;
+    color: #fff;
+    padding: 8px 16px;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    width: auto;
+    min-width: 80px;
+    max-width: 150px;
+    text-align: center;
+    display: inline-block;
+}
+
+/* 蓝色按钮 */
+button.edit-btn,
+button.edit-game-btn,
+button.edit-attr-btn,
+button.options-event-btn,
+button.edit-event-btn,
+button.edit-ending-btn {
+    background-color: var(--btn-blue);
+}
+
+button.edit-btn:hover,
+button.edit-game-btn:hover,
+button.edit-attr-btn:hover,
+button.options-event-btn:hover,
+button.edit-event-btn:hover,
+button.edit-ending-btn:hover {
+    background-color: var(--btn-blue-hover);
+}
+
+/* 绿色按钮 */
+button.play-game-btn,
+button#save-game-btn,
+button.save-btn {
+    background-color: var(--btn-green);
+}
+
+button.play-game-btn:hover,
+button#save-game-btn:hover,
+button.save-btn:hover {
+    background-color: var(--btn-green-hover);
+}
+
+/* 黄色按钮 */
+button#create-game-btn,
+button.add-btn,
+button.add-attr-btn,
+button.add-ending-btn,
+button.add-blank-option-btn,
+button#llm-generate-btn,
+button#add-ending-condition-btn,
+button.add-attr-change-btn {
+    background-color: var(--btn-yellow);
+}
+
+button#create-game-btn:hover,
+button.add-btn:hover,
+button.add-attr-btn:hover,
+button.add-ending-btn:hover,
+button.add-blank-option-btn:hover,
+button#llm-generate-btn:hover,
+button#add-ending-condition-btn:hover,
+button.add-attr-change-btn:hover {
+    background-color: var(--btn-yellow-hover);
+}
+
+/* 红色按钮 */
+button.del-attr-btn,
+button.del-event-btn,
+button.del-ending-btn,
+button.delete-btn,
+button.remove-option-btn,
+button.del-attr-change-btn {
+    background-color: var(--btn-red);
+}
+
+button.del-attr-btn:hover,
+button.del-event-btn:hover,
+button.del-ending-btn:hover,
+button.delete-btn:hover,
+button.remove-option-btn:hover,
+button.del-attr-change-btn:hover {
+    background-color: var(--btn-red-hover);
+}
+
+/* 新增：表单组样式 */
+.form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    width: 120px;
+    text-align: right;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    flex: 1;
+}
+
+/* 针对特定表单的调整 */
+.attribute-form,
+.event-form,
+.ending-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: space-between;
+}
+
+.attribute-form .form-group,
+.event-form .form-group,
+.ending-form .form-group {
+    flex: 1 1 45%;
+}
+
+.attribute-form .form-group.full-width,
+.event-form .form-group.full-width,
+.ending-form .form-group.full-width {
+    flex: 1 1 100%;
+}
+
+/* 按钮容器样式 */
+.attribute-form,
+.event-form,
+.ending-form {
+    align-items: flex-start;
+}
+
+.attribute-form .add-btn,
+.event-form .other-btn,
+.event-form .save-btn,
+.ending-form .add-btn {
+    margin-top: 25px;
+}
+
+/* 创建游戏表单 */
+#create-game-form {
+    background-color: var(--card-bg-color);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    margin: 20px;
+}
+
+/* 属性列表 */
+#attribute-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+#attribute-list > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 45%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+#attribute-list > div button {
+    margin-left: 10px;
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+#attribute-list > div strong {
+    margin-right: auto;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    :root {
+        --sidebar-width: 150px;
+        --header-height: 120px;
+    }
+
+    .header-title h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .sidebar {
+        display: none;
+    }
+
+    .main-content {
+        margin: 0;
+    }
+
+    button {
+        max-width: 100%;
+    }
+}

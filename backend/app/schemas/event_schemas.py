@@ -53,6 +53,7 @@ class EventLLMGenerateRequest(BaseModel):
     title: str
     description: str
     background: str  # 背景字段
+    attributes: List[Dict[str, Any]]  # 添加 attributes 属性
 
 class EventLLMGenerateResponse(BaseModel):
     extended_description: str

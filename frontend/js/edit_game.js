@@ -50,7 +50,7 @@ const endingConditionTypeSelect = document.getElementById('ending-condition-type
 const addEndingConditionBtn = document.getElementById('add-ending-condition-btn');
 const addEndingBtn = document.getElementById('add-ending-btn');
 
-// -- 结局属性下拉框 (仅在“属性比较”类型时用) --
+// -- 结局属性下拉框 (仅在"属性比较"类型时用) --
 const endingAttributeSelect = document.getElementById('ending-attribute-select');
 
 // 全局对象，用于在前端暂存当前正在编辑的事件数据
@@ -205,7 +205,7 @@ function updateSelects(attrs) {
         rangeAttributeSelect.appendChild(option);
     });
 
-    // 用于结局里“属性比较”时可选的属性
+    // 用于结局里"属性比较"时可选的属性
     endingAttributeSelect.innerHTML = "";
     attrs.forEach(attr => {
         const option = document.createElement('option');
@@ -394,11 +394,22 @@ llmGenerateBtn.addEventListener('click', async () => {
         return;
     }
 
+    // 禁用按钮并显示加载动画
+    llmGenerateBtn.disabled = true;
+    llmGenerateBtn.textContent = "加载中...";
+
     try {
+        // 获取游戏属性
+        const attrResp = await fetch(`${baseURL}/attributes?game_id=${gameId}`);
+        if (!attrResp.ok) {
+            throw new Error("加载属性失败");
+        }
+        const attributes = await attrResp.json();
+
         const response = await fetch(`${baseURL}/events/llm_generate`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, description, background })
+            body: JSON.stringify({ title, description, background, attributes })
         });
 
         if (!response.ok) {
@@ -421,7 +432,7 @@ llmGenerateBtn.addEventListener('click', async () => {
         currentEventData.options = data.options.map(opt => ({
             text: opt.text,
             impact_description: opt.impact_description || "",
-            result_attribute_changes: [],  // 初始为空
+            result_attribute_changes: opt.result_attribute_changes || [],
             triggers_ending: opt.triggers_ending || false,
             ending_description: opt.ending_description || null
         }));
@@ -435,6 +446,10 @@ llmGenerateBtn.addEventListener('click', async () => {
     } catch (error) {
         console.error("Error generating content:", error);
         alert(`生成失败：${error.message}`);
+    } finally {
+        // 重新启用按钮并恢复文本
+        llmGenerateBtn.disabled = false;
+        llmGenerateBtn.textContent = "使用 LLM 生成扩写和选项";
     }
 });
 
@@ -449,11 +464,25 @@ function renderOptionInputs() {
             option.result_attribute_changes = [];
         } else if (!Array.isArray(option.result_attribute_changes)) {
             console.warn(`选项 ${index + 1} 的 result_attribute_changes 不是数组，当前值:`, option.result_attribute_changes);
-            option.result_attribute_changes = Array.isArray(option.result_attribute_changes)
-                ? option.result_attribute_changes
-                : [option.result_attribute_changes];
+            // 将字典转换为数组格式
+            option.result_attribute_changes = Object.entries(option.result_attribute_changes).map(([key, value]) => ({
+                attribute: key,
+                operation: value.operation,
+                value: value.value
+            }));
         }
     });
+
+    // 如果没有选项，添加一个空白选项
+    if (currentEventData.options.length === 0) {
+        currentEventData.options.push({
+            text: "",
+            impact_description: "",
+            result_attribute_changes: [],
+            triggers_ending: false,
+            ending_description: null
+        });
+    }
 
     currentEventData.options.forEach((option, index) => {
         const div = document.createElement('div');
@@ -506,15 +535,19 @@ function renderOptionInputs() {
         // 渲染属性变化
         function renderAttrChanges() {
             attrChangesListDiv.innerHTML = '';
-            if (!Array.isArray(option.result_attribute_changes)) {
-                console.warn(`选项 ${index + 1} 的 result_attribute_changes 仍不是数组。`, option.result_attribute_changes);
-                option.result_attribute_changes = [];
-            }
-
             option.result_attribute_changes.forEach((change, cIndex) => {
                 const cDiv = document.createElement('div');
                 cDiv.innerHTML = `
-                    <span>${sanitize(change.attribute)} ${getOperationSymbol(change.operation)} ${sanitize(change.value)}</span>
+                    <select class="attr-select">
+                        ${globalAttributes.map(attr => `<option value="${attr.name}" ${attr.name === change.attribute ? 'selected' : ''}>${attr.name}</option>`).join('')}
+                    </select>
+                    <select class="operation-select">
+                        <option value="add" ${change.operation === 'add' ? 'selected' : ''}>加法(+)</option>
+                        <option value="subtract" ${change.operation === 'subtract' ? 'selected' : ''}>减法(-)</option>
+                        <option value="multiply" ${change.operation === 'multiply' ? 'selected' : ''}>乘法(×)</option>
+                        <option value="divide" ${change.operation === 'divide' ? 'selected' : ''}>除法(÷)</option>
+                    </select>
+                    <input type="number" class="attr-value-input" value="${change.value}" placeholder="数值">
                     <button class="del-attr-change-btn">删除</button>
                 `;
                 cDiv.querySelector('.del-attr-change-btn').addEventListener('click', () => {
@@ -771,7 +804,7 @@ async function loadEndingAttributes() {
             throw new Error("加载结局属性列表失败！");
         }
         const attributes = await resp.json();
-        // 这里只是给 “attribute” 类型做一个初始下拉选用
+        // 这里只是给 "attribute" 类型做一个初始下拉选用
         endingAttributeSelect.innerHTML = "";
         attributes.forEach(attr => {
             const option = document.createElement('option');
@@ -808,12 +841,12 @@ async function loadEventAttributes() {
 
 // ========== 【核心】结局添加：多条件管理 ==========
 
-// 点击“添加条件”时，根据下拉框选项来插入不同类型的条件输入行
+// 点击"添加条件"时，根据下拉框选项来插入不同类型的条件输入行
 addEndingConditionBtn.addEventListener('click', () => {
     // 例如 "attribute" / "item" / "flag"
     const condType = endingConditionTypeSelect.value;
 
-    // 每一条条件用一个 div
+    // 每一条件用一个 div
     const condDiv = document.createElement('div');
     condDiv.classList.add('ending-condition-item');
 
@@ -860,7 +893,7 @@ addEndingConditionBtn.addEventListener('click', () => {
         `;
     }
 
-    // 绑定“移除”按钮
+    // 绑定"移除"按钮
     const removeBtn = condDiv.querySelector('.remove-cond-btn');
     if (removeBtn) {
         removeBtn.addEventListener('click', () => {
@@ -872,7 +905,7 @@ addEndingConditionBtn.addEventListener('click', () => {
     endingConditionListDiv.appendChild(condDiv);
 });
 
-// 点击“添加结局”时，收集描述和所有条件
+// 点击"添加结局"时，收集描述和所有条件
 addEndingBtn.addEventListener('click', async () => {
     const desc = newEndingDescInput.value.trim();
     if (!desc) {
@@ -959,3 +992,33 @@ function sanitize(str) {
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
+
+// 确保选项管理部分始终可见，并允许添加新选项
+function initializeNewEvent() {
+    currentEventData = {
+        id: null,
+        title: "",
+        description: "",
+        range_condition: null,
+        options: [{
+            text: "",
+            impact_description: "",
+            result_attribute_changes: [],
+            triggers_ending: false,
+            ending_description: null
+        }]
+    };
+
+    newEventIdInput.value = "";
+    newEventTitleInput.value = "";
+    newEventDescInput.value = "";
+    currentEventIdSpan.textContent = "新事件";
+
+    optionSection.style.display = 'block';
+    renderOptionInputs();
+}
+
+// 在页面加载时初始化新事件
+window.addEventListener('DOMContentLoaded', (event) => {
+    initializeNewEvent();
+});
