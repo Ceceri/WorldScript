@@ -240,7 +240,7 @@ addAttrBtn.addEventListener('click', async () => {
             throw new Error(error.detail || "添加属性失败");
         }
     } catch (error) {
-        console.error("��加属性失败:", error);
+        console.error("添加属性失败:", error);
         alert(error.message);
     }
 });
@@ -303,7 +303,7 @@ async function loadEvents() {
                             body: JSON.stringify(payload)
                         });
                         if (resp.ok) {
-                            alert("事���标题更新成功");
+                            alert("事件标题更新成功");
                             loadEvents();
                         } else {
                             const error = await resp.json();
@@ -481,7 +481,7 @@ function renderOptionInputs() {
         }
     });
 
-    // 如果没有选项，添���一个空白选项
+    // 如果没有选项，添加一个空白选项
     if (currentEventData.options.length === 0) {
         currentEventData.options.push({
             text: "",
@@ -741,7 +741,7 @@ saveEventBtn.addEventListener('click', async () => {
         optionSection.style.display = 'none';
     } catch (error) {
         console.error("Error saving event:", error);
-        alert(`保存失��：${error.message}`);
+        alert(`保存失败：${error.message}`);
     }
 });
 
@@ -1047,20 +1047,35 @@ window.addEventListener('DOMContentLoaded', (event) => {
 });
 
 // 插入链接函数
-function insertLink(editorId) {
-    const url = prompt("请输入链接地址：", "http://");
-    const text = prompt("请输入链接显示文本", "");
-    if (url && text) {
-        const editor = document.getElementById(editorId);
-        const link = document.createElement('a');
-        link.href = url;
-        link.textContent = text;
-        link.target = '_blank'; // 在新标签页中打开
-        editor.focus(); // 确保编辑器获得焦点
-        const selection = window.getSelection();
-        const range = selection.getRangeAt(0);
-        range.insertNode(link);
-        range.collapse(false);
+async function insertLink(editorId) {
+    const { value: formValues } = await Swal.fire({
+        title: '插入链接',
+        html:
+            '<input id="swal-input1" class="swal2-input" placeholder="链接地址" value="http://">' +
+            '<input id="swal-input2" class="swal2-input" placeholder="链接显示文本">',
+        focusConfirm: false,
+        preConfirm: () => {
+            return [
+                document.getElementById('swal-input1').value,
+                document.getElementById('swal-input2').value
+            ]
+        }
+    });
+
+    if (formValues) {
+        const [url, text] = formValues;
+        if (url && text) {
+            const editor = document.getElementById(editorId);
+            const link = document.createElement('a');
+            link.href = url;
+            link.textContent = text;
+            link.target = '_blank'; // 在新标签页中打开
+            editor.focus(); // 确保编辑器获得焦点
+            const selection = window.getSelection();
+            const range = selection.getRangeAt(0);
+            range.insertNode(link);
+            range.collapse(false);
+        }
     }
 }
 

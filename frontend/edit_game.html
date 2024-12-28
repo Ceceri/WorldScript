@@ -5,6 +5,8 @@
   <title>编辑游戏</title>
   <link rel="icon" href="images/WS.jpg" type="image/jpeg">
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     /* 全局样式调整 */
     body {
@@ -135,6 +137,13 @@
       background-color: #e0a800; /* 深一点的黄色用于悬停效果 */
       transform: translateY(-1px); /* 轻微上浮效果 */
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+    }
+
+    .rich-editor {
+        overflow: auto; /* 启用滚动条 */
+        max-height: 200px; /* 设置最大高度，超出时滚动 */
+        border: 1px solid #ccc; /* 添加边框以便于视觉识别 */
+        padding: 5px; /* 添加内边距 */
     }
   </style>
 </head>
