@@ -77,6 +77,65 @@
         grid-template-columns: 1fr; /* 单列布局 */
       }
     }
+
+    /* 不同大小的富文本编辑器 */
+    .rich-editor.small {
+      height: 30px !important; /* 使用 !important 确保优先级 */
+      width: 90% !important;
+      border: 1px solid #ccc !important;
+      border-radius: 4px !important;
+      padding: 5px !important;
+    }
+
+    .rich-editor.medium {
+      height: 200px !important;
+      width: 70% !important;
+      border: 1px solid #ccc !important;
+      border-radius: 4px !important;
+      padding: 5px !important;
+    }
+
+    .rich-editor.large {
+      height: 300px !important;
+      width: 90% !important;
+      border: 1px solid #ccc !important;
+      border-radius: 4px !important;
+      padding: 5px !important;
+    }
+
+    /* 选项编辑器样式 */
+    .option-input {
+      background-color: #f8f9fa;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border: 1px solid #dee2e6;
+    }
+
+    .option-input .rich-editor {
+      margin: 5px 0;
+      background-color: white;
+      /* 移除这里的固定高度设置，使用上面的尺寸类 */
+    }
+
+    .format-btn {
+      background-color: #ffc107; /* 黄色背景 */
+      border: 1px solid #e0a800;
+      border-radius: 4px;
+      padding: 5px 10px;
+      margin: 5px;
+      cursor: pointer;
+      color: #fff; /* 白色文字 */
+      text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2); /* 添加文字阴影提高可读性 */
+      transition: all 0.3s ease;
+      font-weight: 500; /* 稍微加粗一点 */
+    }
+
+    .format-btn:hover {
+      background-color: #e0a800; /* 深一点的黄色用于悬停效果 */
+      transform: translateY(-1px); /* 轻微上浮效果 */
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* 添加阴影 */
+    }
   </style>
 </head>
 <body>
@@ -90,7 +149,8 @@
       </div>
       <div class="form-group">
         <label for="game-background">游戏背景:</label>
-        <textarea id="game-background" rows="5"></textarea>
+        <div id="game-background" class="rich-editor large" contenteditable="true"></div>
+        <button type="button" class="format-btn" onclick="insertLink('game-background')">插入链接</button>
       </div>
       <button id="update-game-btn" class="edit-btn">更新游戏信息</button>
     </div>
@@ -129,7 +189,8 @@
         </div>
         <div class="form-group">
           <label for="new-event-desc">描述:</label>
-          <textarea id="new-event-desc" rows="3"></textarea>
+          <div id="new-event-desc" class="rich-editor medium" contenteditable="true"></div>
+          <button type="button" class="format-btn" onclick="insertLink('new-event-desc')">插入链接</button>
         </div>
       </div>
       <div class="event-form">
@@ -163,19 +224,24 @@
     <div id="ending-section" class="section">
       <h2>结局管理</h2>
       <div id="ending-list"></div>
+      
       <h3>添加新结局</h3>
+      
       <div class="ending-form">
         <div class="form-group">
           <label for="new-ending-desc">描述:</label>
-          <textarea id="new-ending-desc" rows="3"></textarea>
+          <div id="new-ending-desc" class="rich-editor medium" contenteditable="true"></div>
+          <button type="button" class="format-btn" onclick="insertLink('new-ending-desc')">插入链接</button>
         </div>
       </div>
+      
       <div class="ending-form">
         <div class="form-group">
           <label for="ending-attribute-select">可比较的属性(可选)：</label>
           <select id="ending-attribute-select"></select>
         </div>
       </div>
+      
       <div class="ending-form">
         <div class="form-group">
           <label for="ending-condition-type">选择条件类型：</label>
@@ -187,6 +253,10 @@
         </div>
         <button id="add-ending-condition-btn" class="add-blank-option-btn">添加条件</button>
       </div>
+      
+      <!-- 添加以下div -->
+      <div id="ending-condition-list" class="ending-condition-list"></div>
+      
       <button id="add-ending-btn" class="add-btn">添加结局</button>
     </div>
   </div>

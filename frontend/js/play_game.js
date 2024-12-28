@@ -14,7 +14,7 @@ async function initGame() {
     const gameInfoResp = await fetch(`${baseURL}/games/${gameId}`);
     const gameInfo = await gameInfoResp.json();
     document.getElementById('game-title').innerText = gameInfo.title;
-    document.getElementById('game-background').innerText = gameInfo.background;
+    document.getElementById('game-background').innerHTML = gameInfo.background;
 
     // 加载初始玩家属性
     const attributesResp = await fetch(`${baseURL}/attributes?game_id=${gameId}`);
@@ -41,13 +41,13 @@ function updateAttributesDisplay() {
 // 显示事件和选项
 function displayEvent(event) {
     document.getElementById('event-title').innerText = event.title;
-    document.getElementById('event-description').innerText = event.description;
+    document.getElementById('event-description').innerHTML = event.description;
 
     const optionsDiv = document.getElementById('options');
     optionsDiv.innerHTML = '';
     event.options.forEach(option => {
         const button = document.createElement('button');
-        button.innerText = option.text;
+        button.innerHTML = option.text;
         button.addEventListener('click', () => selectOption(event, option));
         optionsDiv.appendChild(button);
     });
@@ -66,7 +66,7 @@ async function checkEndings(gameId) {
             await Swal.fire({
                 icon: 'success',
                 title: '游戏结束',
-                text: ending.description || "游戏结束！",
+                html: ending.description || "游戏结束！",
                 showDenyButton: true, // 显示第二个按钮
                 showCancelButton: true, // 显示取消按钮
                 confirmButtonText: '再来一次',
@@ -168,7 +168,7 @@ async function selectOption(event, option) {
         await Swal.fire({
             // icon: 'info',
             title: '选择结果',
-            text: option.impact_description || "你选择了该选项。",
+            html: option.impact_description || "你选择了该选项。",
             confirmButtonText: '继续'
         });
 
@@ -209,7 +209,7 @@ async function selectOption(event, option) {
     await Swal.fire({
         // icon: 'info',
         title: '选择结果',
-        text: option.impact_description || "你选择了该选项。",
+        html: option.impact_description || "你选择了该选项。",
         confirmButtonText: '继续'
     });
 

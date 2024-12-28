@@ -84,7 +84,7 @@ async function loadGameInfo() {
         }
         const game = await resp.json();
         gameTitleInput.value = game.title;
-        gameBackgroundInput.value = game.background || "";
+        setRichEditorContent('game-background', game.background || "");
     } catch (error) {
         console.error(error);
         alert(error.message);
@@ -93,7 +93,7 @@ async function loadGameInfo() {
 
 updateGameBtn.addEventListener('click', async () => {
     const title = gameTitleInput.value.trim() || null;
-    const background = gameBackgroundInput.value.trim() || null;
+    const background = getRichEditorContent('game-background') || null;
     const random_entries = [];
 
     const payload = { title, background, random_entries };
@@ -240,7 +240,7 @@ addAttrBtn.addEventListener('click', async () => {
             throw new Error(error.detail || "添加属性失败");
         }
     } catch (error) {
-        console.error("添加属性失败:", error);
+        console.error("��加属性失败:", error);
         alert(error.message);
     }
 });
@@ -303,7 +303,7 @@ async function loadEvents() {
                             body: JSON.stringify(payload)
                         });
                         if (resp.ok) {
-                            alert("事件标题更新成功");
+                            alert("事���标题更新成功");
                             loadEvents();
                         } else {
                             const error = await resp.json();
@@ -372,7 +372,7 @@ async function showOptionsForEvent(eventId) {
         // 将数据填入表单
         newEventIdInput.value = currentEventData.id;
         newEventTitleInput.value = currentEventData.title;
-        newEventDescInput.value = currentEventData.description || "";
+        newEventDescInput.innerHTML = currentEventData.description || "";
         currentEventIdSpan.textContent = currentEventData.id;
 
         optionSection.style.display = 'block';
@@ -385,9 +385,16 @@ async function showOptionsForEvent(eventId) {
 
 // 使用 LLM 生成事件描述和选项
 llmGenerateBtn.addEventListener('click', async () => {
+    // 获取富文本编辑器内容
     const title = newEventTitleInput.value.trim();
-    const description = newEventDescInput.value.trim();
-    const background = gameBackgroundInput.value.trim();
+    const description = getRichEditorContent('new-event-desc').trim();
+    const background = getRichEditorContent('game-background').trim();
+
+    // 调试日志
+    console.log('LLM Generate Button Clicked');
+    console.log('Title:', title);
+    console.log('Description:', description);
+    console.log('Background:', background);
 
     if (!title || !description || !background) {
         alert("标题、描述和背景不能为空！");
@@ -437,7 +444,8 @@ llmGenerateBtn.addEventListener('click', async () => {
             ending_description: opt.ending_description || null
         }));
 
-        newEventDescInput.value = data.extended_description;
+        // 更新富文本编辑器内容
+        setRichEditorContent('new-event-desc', data.extended_description);
         currentEventIdSpan.textContent = currentEventData.id || "";
         optionSection.style.display = 'block';
 
@@ -453,6 +461,7 @@ llmGenerateBtn.addEventListener('click', async () => {
     }
 });
 
+
 // 渲染选项输入框
 function renderOptionInputs() {
     optionListDiv.innerHTML = '';
@@ -464,7 +473,6 @@ function renderOptionInputs() {
             option.result_attribute_changes = [];
         } else if (!Array.isArray(option.result_attribute_changes)) {
             console.warn(`选项 ${index + 1} 的 result_attribute_changes 不是数组，当前值:`, option.result_attribute_changes);
-            // 将字典转换为数组格式
             option.result_attribute_changes = Object.entries(option.result_attribute_changes).map(([key, value]) => ({
                 attribute: key,
                 operation: value.operation,
@@ -473,7 +481,7 @@ function renderOptionInputs() {
         }
     });
 
-    // 如果没有选项，添加一个空白选项
+    // 如果没有选项，添���一个空白选项
     if (currentEventData.options.length === 0) {
         currentEventData.options.push({
             text: "",
@@ -490,10 +498,19 @@ function renderOptionInputs() {
         div.innerHTML = `
             <hr>
             <label>选项 ${index + 1}:</label><br>
-            <label>描述:</label> <input type="text" class="option-text" value="${sanitize(option.text)}" /><br>
-            <label>影响描述:</label> <input type="text" class="impact-description" value="${sanitize(option.impact_description)}" /><br>
+            <label>描述:</label>
+            <div class="rich-editor small option-text" contenteditable="true">${option.text}</div>
+            <button type="button" class="format-btn" onclick="insertLink('option-text-${index}')">插入链接</button><br>
+            
+            <label>影响描述:</label>
+            <div class="rich-editor small impact-description" contenteditable="true">${option.impact_description}</div>
+            <button type="button" class="format-btn" onclick="insertLink('impact-desc-${index}')">插入链接</button><br>
+            
             <label>触发结局:</label> <input type="checkbox" class="option-ending-check" ${option.triggers_ending ? 'checked' : ''}><br>
-            <label>结局描述(可选):</label> <input type="text" class="option-ending-desc" value="${sanitize(option.ending_description)}" /><br>
+            
+            <label>结局描述(可选):</label>
+            <div class="rich-editor small option-ending-desc" contenteditable="true">${option.ending_description}</div>
+            <button type="button" class="format-btn" onclick="insertLink('ending-desc-${index}')">插入链接</button><br>
             
             <h4>属性变化</h4>
             <div class="attribute-changes-list"></div>
@@ -512,6 +529,15 @@ function renderOptionInputs() {
             <button class="remove-option-btn">删除此选项</button>
         `;
 
+        // 设置唯一ID，用于插入链接
+        const textEditor = div.querySelector('.option-text');
+        const impactEditor = div.querySelector('.impact-description');
+        const endingEditor = div.querySelector('.option-ending-desc');
+        
+        textEditor.id = `option-text-${index}`;
+        impactEditor.id = `impact-desc-${index}`;
+        endingEditor.id = `ending-desc-${index}`;
+
         // 属性下拉菜单
         const attrSelect = div.querySelector('.attr-select');
         globalAttributes.forEach(attr => {
@@ -521,10 +547,7 @@ function renderOptionInputs() {
             attrSelect.appendChild(opt);
         });
 
-        const textInput = div.querySelector('.option-text');
-        const impactInput = div.querySelector('.impact-description');
         const endingCheck = div.querySelector('.option-ending-check');
-        const endingDescInput = div.querySelector('.option-ending-desc');
         const removeBtn = div.querySelector('.remove-option-btn');
 
         const attrChangesListDiv = div.querySelector('.attribute-changes-list');
@@ -561,17 +584,17 @@ function renderOptionInputs() {
         renderAttrChanges(); // 首次渲染
 
         // 输入变化监听器
-        textInput.addEventListener('input', (e) => {
-            currentEventData.options[index].text = e.target.value;
+        textEditor.addEventListener('input', (e) => {
+            currentEventData.options[index].text = e.target.innerHTML;
         });
-        impactInput.addEventListener('input', (e) => {
-            currentEventData.options[index].impact_description = e.target.value;
+        impactEditor.addEventListener('input', (e) => {
+            currentEventData.options[index].impact_description = e.target.innerHTML;
         });
         endingCheck.addEventListener('change', (e) => {
             currentEventData.options[index].triggers_ending = e.target.checked;
         });
-        endingDescInput.addEventListener('input', (e) => {
-            currentEventData.options[index].ending_description = e.target.value;
+        endingEditor.addEventListener('input', (e) => {
+            currentEventData.options[index].ending_description = e.target.innerHTML;
         });
 
         // 添加属性变化按钮
@@ -636,9 +659,9 @@ addBlankOptionBtn.addEventListener('click', () => {
 // 保存事件及选项
 saveEventBtn.addEventListener('click', async () => {
     // 获取并处理事件基本信息
-    currentEventData.id = parseInt(newEventIdInput.value.trim(), 10); // 确保ID为整数
+    currentEventData.id = parseInt(newEventIdInput.value.trim(), 10);
     currentEventData.title = newEventTitleInput.value.trim();
-    currentEventData.description = newEventDescInput.value.trim();
+    currentEventData.description = getRichEditorContent('new-event-desc');
 
     // 处理 range_condition
     const attribute = rangeAttributeSelect.value;
@@ -682,13 +705,13 @@ saveEventBtn.addEventListener('click', async () => {
         title: currentEventData.title,
         description: currentEventData.description,
         range_condition: currentEventData.range_condition || null,
-        options: currentEventData.options.map(option => ({
+        options: currentEventData.options.map((option, index) => ({
             event_id: parseInt(currentEventData.id, 10),
-            text: option.text,
-            impact_description: option.impact_description,
+            text: getRichEditorContent(`option-text-${index}`), // 使用富文本内容
+            impact_description: getRichEditorContent(`impact-desc-${index}`), // 使用富文本内容
             result_attribute_changes: option.result_attribute_changes,
             triggers_ending: option.triggers_ending || false,
-            ending_description: option.ending_description || null
+            ending_description: getRichEditorContent(`ending-desc-${index}`) // 使用富文本内容
         }))
     };
     
@@ -718,7 +741,7 @@ saveEventBtn.addEventListener('click', async () => {
         optionSection.style.display = 'none';
     } catch (error) {
         console.error("Error saving event:", error);
-        alert(`保存失败：${error.message}`);
+        alert(`保存失��：${error.message}`);
     }
 });
 
@@ -736,7 +759,7 @@ async function loadEndings() {
         endings.forEach(ending => {
             const div = document.createElement('div');
             div.innerHTML = `
-                <strong>ID:${sanitize(ending.id)}</strong> - ${sanitize(ending.description)}
+                <strong>ID:${sanitize(ending.id)}</strong> - <span class="ending-description">${ending.description}</span>
                 <button data-id="${ending.id}" class="del-ending-btn">删除</button>
                 <button data-id="${ending.id}" class="edit-ending-btn">编辑</button>
             `;
@@ -747,7 +770,7 @@ async function loadEndings() {
         document.querySelectorAll('.del-ending-btn').forEach(btn => {
             btn.addEventListener('click', async () => {
                 const id = btn.getAttribute('data-id');
-                if (confirm("确定要删除这个结局吗？")) {
+                if (confirm("确定要删除这个结局？")) {
                     try {
                         const resp = await fetch(`${baseURL}/endings/${id}`, { method: 'DELETE' });
                         if (resp.ok) {
@@ -865,7 +888,7 @@ addEndingConditionBtn.addEventListener('click', () => {
             <input type="number" class="attr-value-input" placeholder="数值">
             <button class="remove-cond-btn">移除</button>
         `;
-        // 填充属性下拉
+        // 填属性下拉
         const sel = condDiv.querySelector('.attr-select');
         globalAttributes.forEach(attr => {
             const opt = document.createElement('option');
@@ -905,9 +928,9 @@ addEndingConditionBtn.addEventListener('click', () => {
     endingConditionListDiv.appendChild(condDiv);
 });
 
-// 点击"添加结局"时，收集描述和所有条件
+// 点击"添加结局"时收集描述和所有条件
 addEndingBtn.addEventListener('click', async () => {
-    const desc = newEndingDescInput.value.trim();
+    const desc = getRichEditorContent('new-ending-desc');
     if (!desc) {
         alert("结局描述不能为空！");
         return;
@@ -1022,3 +1045,33 @@ function initializeNewEvent() {
 window.addEventListener('DOMContentLoaded', (event) => {
     initializeNewEvent();
 });
+
+// 插入链接函数
+function insertLink(editorId) {
+    const url = prompt("请输入链接地址：", "http://");
+    const text = prompt("请输入链接显示文本", "");
+    if (url && text) {
+        const editor = document.getElementById(editorId);
+        const link = document.createElement('a');
+        link.href = url;
+        link.textContent = text;
+        link.target = '_blank'; // 在新标签页中打开
+        editor.focus(); // 确保编辑器获得焦点
+        const selection = window.getSelection();
+        const range = selection.getRangeAt(0);
+        range.insertNode(link);
+        range.collapse(false);
+    }
+}
+
+// 获取富文本编辑器内容
+function getRichEditorContent(editorId) {
+    const editor = document.getElementById(editorId);
+    return editor.innerHTML;
+}
+
+// 设置富文本编辑器内容
+function setRichEditorContent(editorId, content) {
+    const editor = document.getElementById(editorId);
+    editor.innerHTML = content || '';
+}
