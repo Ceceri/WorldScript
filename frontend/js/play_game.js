@@ -27,14 +27,18 @@ async function initGame() {
     document.getElementById('start-game-btn').addEventListener('click', () => startGame(gameId));
 }
 
-// 更新玩家属性显示
+// 更新玩家属性显示为柱状图
 function updateAttributesDisplay() {
-    const attributeList = document.getElementById('attribute-list');
-    attributeList.innerHTML = '';
+    const attributeChart = document.getElementById('attribute-chart');
+    attributeChart.innerHTML = '';
     for (const [name, value] of Object.entries(currentAttributes)) {
-        const li = document.createElement('li');
-        li.innerText = `${name}: ${value}`;
-        attributeList.appendChild(li);
+        const barContainer = document.createElement('div');
+        const bar = document.createElement('div');
+        bar.className = 'attribute-bar';
+        bar.style.width = `${value}%`;
+        bar.setAttribute('data-label', `${name}: ${value}`);
+        barContainer.appendChild(bar);
+        attributeChart.appendChild(barContainer);
     }
 }
 
@@ -115,6 +119,10 @@ function evaluateCondition(attrValue, operator, value) {
 
 // 开始游戏，加载符合条件的事件
 async function startGame(gameId) {
+    // 隐藏"开始游戏"按钮
+    document.getElementById('start-game-btn').style.display = 'none';
+
+    // 检查是否触发结局
     if (await checkEndings(gameId)) {
         return;
     }
@@ -206,10 +214,26 @@ async function selectOption(event, option) {
 
     updateAttributesDisplay();
 
+    // 构建属性影响信息
+    let attributeImpactHtml = '';
+    changes.forEach(change => {
+        const { attribute, value, operation } = change;
+        let symbol = '';
+        switch (operation) {
+            case 'add': symbol = '+'; break;
+            case 'subtract': symbol = '-'; break;
+            case 'multiply': symbol = '*'; break;
+            case 'divide': symbol = '/'; break;
+            default: symbol = '?';
+        }
+        attributeImpactHtml += `<p>${attribute} ${symbol} ${value}</p>`;
+    });
+
+    // 显示选择结果和属性影响
     await Swal.fire({
         // icon: 'info',
         title: '选择结果',
-        html: option.impact_description || "你选择了该选项。",
+        html: (option.impact_description || "你选择了该选项。") + attributeImpactHtml,
         confirmButtonText: '继续'
     });
 
@@ -220,6 +244,9 @@ async function selectOption(event, option) {
 
     // 继续游戏
     startGame(event.game_id);
+
+    // 打印选项对应的属性影响
+    console.log('选项影响:', changes);
 }
 
 

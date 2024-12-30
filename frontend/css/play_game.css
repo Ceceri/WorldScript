@@ -21,18 +21,20 @@ html, body {
     padding: 0;
     width: 100%;
     min-height: 100vh;
-    background-color: var(--secondary-color);
+    background-color: #87CEFA; /* 浅蓝色背景 */
+    background-image: radial-gradient(circle, #B0E0E6 2px, transparent 1px);
+    background-size: 25px 25px;
     font-family: var(--font-family);
     display: flex;
+    flex-direction: row;
     justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #f0f0f0 25%, #ffffff 25%, #ffffff 50%, #f0f0f0 50%, #f0f0f0 75%, #ffffff 75%, #ffffff 100%);
-    background-size: 28.28px 28.28px;
+    align-items: flex-start;
+    font-size: 20px; /* 增大字体大小 */
 }
 
 /* 容器样式 */
 .container {
-    background-color: #ffffff;
+    background-color: #B0E0E6; /* 略浅的蓝色背景 */
     padding: var(--padding);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
@@ -40,6 +42,7 @@ html, body {
     width: 90%;
     text-align: center; /* 使标题居中 */
     animation: fadeIn 1s ease-in-out;
+    margin-left: 0;
 }
 
 /* 添加淡入动画 */
@@ -187,4 +190,71 @@ ul li:hover {
     .options-container .btn {
         max-width: 100%;
     }
+}
+
+#player-status {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 150px;
+    padding: 20px;
+    background-color: #B0E0E6;
+    box-shadow: var(--box-shadow);
+    border-radius: var(--border-radius);
+    margin: 20px;
+    margin-right: 20px;
+}
+
+.attribute-chart {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.attribute-bar {
+    background-color: #4CAF50;
+    height: 20px;
+    margin: 5px 0;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 110px; /* 为标签留出空间 */
+}
+
+.attribute-bar::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    color: #333;
+    font-weight: bold;
+    white-space: nowrap;
+    background-color: transparent; /* 设置背景为透明 */
+}
+
+#options button {
+    background-color: orange;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+#options button:hover {
+    background-color: darkorange;
+    box-shadow: 0 12px 16px rgba(0, 0, 0, 0.25);
+    transform: translateY(-2px);
+}
+
+#options button:active {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    transform: translateY(2px);
 }
