@@ -71,5 +71,4 @@ uvicorn app.main:app --reload
 cd frontend
 python -m http.server 8001
 ```
-然后就可以在浏览器中访问http://localhost:8001/index.html，开始编辑、游玩游戏
-
+然后就可以在浏览器中访问http://localhost:8001/index.html
