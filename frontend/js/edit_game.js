@@ -188,6 +188,9 @@ async function loadAttributes() {
         });
 
         updateSelects(attrs);
+        if (optionSection.style.display !== 'none') {
+            renderOptionInputs();
+        }
     } catch (error) {
         console.error(error);
         attributeListDiv.innerHTML = error.message;
@@ -464,12 +467,13 @@ llmGenerateBtn.addEventListener('click', async () => {
 
 // 渲染选项输入框
 function renderOptionInputs() {
-    optionListDiv.innerHTML = '';
+    optionListDiv.innerHTML = ''; // 清空选项列表容器
+    console.log("当前 globalAttributes 数据:", globalAttributes);
 
     // 确保每个选项的 result_attribute_changes 为数组
     currentEventData.options.forEach((option, index) => {
         if (!option.result_attribute_changes) {
-            console.warn(`选项 ${index + 1} 的 result_attribute_changes 未定义或为假值，自动初始化为空数组。`);
+            console.warn(`选项 ${index + 1} 的 result_attribute_changes 未定义或为空，初始化为空数组。`);
             option.result_attribute_changes = [];
         } else if (!Array.isArray(option.result_attribute_changes)) {
             console.warn(`选项 ${index + 1} 的 result_attribute_changes 不是数组，当前值:`, option.result_attribute_changes);
@@ -481,7 +485,7 @@ function renderOptionInputs() {
         }
     });
 
-    // 如果没有选项，添加一个空白选项
+    // 如果当前选项数组为空，则添加一个默认选项
     if (currentEventData.options.length === 0) {
         currentEventData.options.push({
             text: "",
@@ -492,6 +496,7 @@ function renderOptionInputs() {
         });
     }
 
+    // 渲染每个选项
     currentEventData.options.forEach((option, index) => {
         const div = document.createElement('div');
         div.className = 'option-input';
@@ -506,7 +511,8 @@ function renderOptionInputs() {
             <div class="rich-editor small impact-description" contenteditable="true">${option.impact_description}</div>
             <button type="button" class="format-btn" onclick="insertLink('impact-desc-${index}')">插入链接</button><br>
             
-            <label>触发结局:</label> <input type="checkbox" class="option-ending-check" ${option.triggers_ending ? 'checked' : ''}><br>
+            <label>触发结局:</label> 
+            <input type="checkbox" class="option-ending-check" ${option.triggers_ending ? 'checked' : ''}><br>
             
             <label>结局描述(可选):</label>
             <div class="rich-editor small option-ending-desc" contenteditable="true">${option.ending_description}</div>
@@ -538,7 +544,7 @@ function renderOptionInputs() {
         impactEditor.id = `impact-desc-${index}`;
         endingEditor.id = `ending-desc-${index}`;
 
-        // 属性下拉菜单
+        // 属性下拉菜单初始化
         const attrSelect = div.querySelector('.attr-select');
         globalAttributes.forEach(attr => {
             const opt = document.createElement('option');
@@ -610,7 +616,7 @@ function renderOptionInputs() {
                 alert("请输入有效的数值！");
                 return;
             }
-            currentEventData.options[index].result_attribute_changes.push({
+            option.result_attribute_changes.push({
                 attribute: selectedAttribute,
                 operation: selectedOperation,
                 value: inputValue

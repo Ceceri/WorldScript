@@ -35,9 +35,15 @@ function updateAttributesDisplay() {
         const barContainer = document.createElement('div');
         const bar = document.createElement('div');
         bar.className = 'attribute-bar';
-        bar.style.width = `${value}%`;
-        bar.setAttribute('data-label', `${name}: ${value}`);
+        bar.style.height = `${value * 8}px`;
+        bar.setAttribute('data-value', `${value}`); // 显示数值
+
+        const label = document.createElement('div');
+        label.className = 'attribute-label';
+        label.innerText = name; // 显示属性名称
+
         barContainer.appendChild(bar);
+        barContainer.appendChild(label);
         attributeChart.appendChild(barContainer);
     }
 }
@@ -267,3 +273,15 @@ function applyOperation(currentValue, change) {
 
 // 初始化游戏页面
 initGame();
+
+// 设置初始的侧边栏按钮文本
+const playerStatus = document.getElementById('player-status');
+const isCollapsed = playerStatus.classList.contains('collapsed');
+document.getElementById('toggle-sidebar-btn').innerText = isCollapsed ? '>' : '<';
+
+// 侧边栏切换逻辑
+document.getElementById('toggle-sidebar-btn').addEventListener('click', () => {
+    playerStatus.classList.toggle('collapsed');
+    const isCollapsed = playerStatus.classList.contains('collapsed');
+    document.getElementById('toggle-sidebar-btn').innerText = isCollapsed ? '>' : '<';
+});
