@@ -127,6 +127,7 @@ function evaluateCondition(attrValue, operator, value) {
 async function startGame(gameId) {
     // 隐藏"开始游戏"按钮
     document.getElementById('start-game-btn').style.display = 'none';
+    console.log("属性类型检查", typeof currentAttributes.date, currentAttributes.date);
 
     // 检查是否触发结局
     if (await checkEndings(gameId)) {

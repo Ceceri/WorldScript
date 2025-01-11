@@ -94,9 +94,6 @@ def get_random_event(
     occurred_events: list[int] = Body(...),  # 新增参数：已发生事件的ID列表
     db: Session = Depends(get_db)
 ):
-    # 解包玩家属性
-    player_attributes = player_attributes.get("player_attributes", {})
-
     # 确保事件ID和occurred_events类型一致
     occurred_events = [int(event_id) for event_id in occurred_events]
     # print(f"所有事件: {[event.id for event in db.query(GameEvent).filter(GameEvent.game_id == game_id).all()]}")
@@ -109,15 +106,25 @@ def get_random_event(
     # 筛选符合玩家属性条件的事件
     valid_events = []
     for event in events:
+        print("检查事件ID:", event.id)
         if not event.range_condition:
+            print("事件无条件，直接加入")
             valid_events.append(event)
             continue
+        
         condition = event.range_condition
-        attr_value = player_attributes.get(condition["attribute"], 0)
-
-        # 检查属性是否满足事件的范围条件
-        if (condition.get("min_value", float('-inf')) <= attr_value <= condition.get("max_value", float('inf'))):
+        attr_name = condition.get("attribute")
+        attr_value = player_attributes.get(attr_name, 0)
+        min_v = condition.get("min_value", float('-inf'))
+        max_v = condition.get("max_value", float('inf'))
+        print(f"事件条件 -> 属性: {attr_name}, 条件: {min_v} <= {attr_value} <= {max_v}")
+        
+        if (min_v <= attr_value <= max_v):
+            print("条件满足，事件加入")
             valid_events.append(event)
+        else:
+            print("条件不满足，不加入该事件")
+
 
     # 如果没有符合条件的事件，返回 None
     if not valid_events:
